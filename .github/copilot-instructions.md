@@ -24,7 +24,7 @@ Short, actionable notes to help an AI coding agent be productive immediately in 
 - Use messaging helpers: `msg_info`, `msg_ok`, `msg_error` (found in core libs).
 - For package installs and environment setup prefer `tools.func` (Debian) or `alpine-tools.func` (Alpine).
 - For Docker setup in install scripts, prefer `setup_docker` from `tools.func` over ad-hoc install logic when compatible.
-- Many scripts source the central helpers remotely during CI: `source <(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/misc/tools.func)` — changes to `tools.func` affect a large surface.
+- Many scripts source the central helpers remotely during CI: `source <(curl -fsSL https://raw.githubusercontent.com/savino/ProxmoxVE/main/misc/tools.func)` — changes to `tools.func` affect a large surface.
 
 ## Dev & debug workflow (explicit) 🐞
 - Use `dev_mode` env var (see `docs/DEV_MODE.md`) to combine: `dryrun`, `trace`, `pause`, `motd`, `keep`, `breakpoint`, `logs`.
