@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Copyright (c) 2021-2026 community-scripts ORG
-# Author: [YourGitHubUsername]
+# Author: savino
 # License: MIT | https://github.com/community-scripts/ProxmoxVE/raw/main/LICENSE
 # Source: https://docs.anythingllm.com/
 
@@ -14,11 +14,13 @@ network_check
 update_os
 
 msg_info "Installing Docker"
-$STD sh <(curl -fsSL https://get.docker.com)
+setup_docker
 msg_ok "Installed Docker"
 
 msg_info "Creating AnythingLLM directories"
 mkdir -p /appdata/anythingllm
+chown -R 1000:1000 /appdata/anythingllm
+chmod 775 /appdata/anythingllm
 msg_ok "Created directories"
 
 msg_info "Creating AnythingLLM .env file"
@@ -39,6 +41,12 @@ msg_info "Pulling AnythingLLM Docker image"
 $STD docker pull mintplexlabs/anythingllm:latest
 msg_ok "Pulled AnythingLLM image"
 
+if docker ps -a --format '{{.Names}}' | grep -q '^anythingllm$'; then
+  msg_info "Removing existing AnythingLLM container"
+  $STD docker rm -f anythingllm
+  msg_ok "Removed existing container"
+fi
+
 msg_info "Starting AnythingLLM container"
 $STD docker run -d \
   --name anythingllm \
@@ -51,9 +59,20 @@ $STD docker run -d \
   mintplexlabs/anythingllm:latest
 msg_ok "Started AnythingLLM container"
 
-msg_info "Waiting for AnythingLLM to start (30 seconds)"
-sleep 30
-msg_ok "AnythingLLM should now be accessible"
+msg_info "Validating AnythingLLM startup"
+for _ in {1..30}; do
+  if curl -fsS http://127.0.0.1:3001 >/dev/null 2>&1; then
+    msg_ok "AnythingLLM is accessible on port 3001"
+    break
+  fi
+  sleep 2
+done
+
+if ! curl -fsS http://127.0.0.1:3001 >/dev/null 2>&1; then
+  msg_error "AnythingLLM did not become reachable on port 3001"
+  docker logs --tail 200 anythingllm || true
+  exit 1
+fi
 
 motd_ssh
 customize
